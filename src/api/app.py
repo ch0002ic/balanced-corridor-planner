@@ -107,6 +107,20 @@ def _metrics_from_output(output_path: Path) -> Dict[str, object]:
     }
 
 
+def _resolve_output_csv() -> Path:
+    default_output = DATA_DIR / "output.csv"
+    if default_output.exists():
+        return default_output
+
+    if ARCHIVES_DIR.exists():
+        for run_dir in sorted(ARCHIVES_DIR.iterdir(), reverse=True):
+            candidate = run_dir / "output.csv"
+            if candidate.exists():
+                return candidate
+
+    raise HTTPError(404, "No simulation output available.")
+
+
 def _archive_metadata(run_dir: Path) -> Optional[Dict[str, object]]:
     if not run_dir.is_dir():
         return None
@@ -292,7 +306,7 @@ def application(environ, start_response):  # noqa: D401 - WSGI entry point
 
     try:
         if method == "GET" and path == "/api/metrics":
-            payload = _metrics_from_output(DATA_DIR / "output.csv")
+            payload = _metrics_from_output(_resolve_output_csv())
             status_line, headers, body = _json_response(200, payload)
         elif method == "GET" and path == "/api/archives":
             payload = _list_archives(environ)
