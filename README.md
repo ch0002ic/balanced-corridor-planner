@@ -120,4 +120,5 @@ The repository now ships with `render.yaml` so you can deploy the Python API on 
 4. After the service is healthy, note the public URL (e.g. `https://balanced-corridor-planner-api.onrender.com`).
 5. In Vercel, add an Environment Variable `VITE_API_BASE_URL` set to that URL (Project ▸ Settings ▸ Environment Variables) and trigger a redeploy; the frontend will now call the cloud API instead of `localhost`.
 
+
 If you later expose the backend behind the same hostname (e.g. via a reverse proxy on Vercel or Nginx), update `vercel.json` so the `/api/*` path rewrites to that upstream instead of the SPA `index.html`.
