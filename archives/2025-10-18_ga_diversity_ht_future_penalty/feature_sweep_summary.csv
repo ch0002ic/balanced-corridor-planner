@@ -1,0 +1,17 @@
+feature_combo,finish_time_seconds,max_di_jobs
+none,1146400,688
+path_cache,1146400,688
+ga_diversity,1145420,687
+ga_diversity+path_cache,1145420,687
+dynamic_corridor_bias,1146050,688
+dynamic_corridor_bias+path_cache,1146050,688
+dynamic_corridor_bias+ga_diversity,1154170,687
+dynamic_corridor_bias+ga_diversity+path_cache,1154170,687
+ht_future_penalty,1155360,688
+ht_future_penalty+path_cache,1155360,688
+dynamic_corridor_bias+ht_future_penalty,1151300,687
+dynamic_corridor_bias+ht_future_penalty+path_cache,1151300,687
+ga_diversity+ht_future_penalty,1139820,687
+ga_diversity+ht_future_penalty+path_cache,1139820,687
+dynamic_corridor_bias+ga_diversity+ht_future_penalty,1140800,688
+dynamic_corridor_bias+ga_diversity+ht_future_penalty+path_cache,1140800,688
