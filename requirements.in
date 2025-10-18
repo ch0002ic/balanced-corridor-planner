@@ -10,6 +10,7 @@ logzero
 black
 isort
 invoke
+gunicorn
 
 # jupyter notebook
 ipykernel

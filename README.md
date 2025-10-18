@@ -109,3 +109,15 @@ When you are ready to submit your solution, please prepare the following:
 ---
 
 If you have any questions or need assistance, feel free to reach out. Good luck and happy coding!
+
+## Cloud Deployment Quickstart
+
+The repository now ships with `render.yaml` so you can deploy the Python API on [Render](https://render.com/) in a few clicks:
+
+1. Push your latest code to GitHub (already done).
+2. In Render, choose **New ▸ Blueprint** and point it at this repo; Render will detect `render.yaml` and create a web service named `balanced-corridor-planner-api`.
+3. On first deploy Render installs `requirements.txt` and starts `gunicorn --bind 0.0.0.0:$PORT src.api.app:app` as defined in the blueprint. Archives and data live on Render's persistent disk, so runs survive restarts.
+4. After the service is healthy, note the public URL (e.g. `https://balanced-corridor-planner-api.onrender.com`).
+5. In Vercel, add an Environment Variable `VITE_API_BASE_URL` set to that URL (Project ▸ Settings ▸ Environment Variables) and trigger a redeploy; the frontend will now call the cloud API instead of `localhost`.
+
+If you later expose the backend behind the same hostname (e.g. via a reverse proxy on Vercel or Nginx), update `vercel.json` so the `/api/*` path rewrites to that upstream instead of the SPA `index.html`.

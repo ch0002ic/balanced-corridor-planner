@@ -66,6 +66,8 @@ fastjsonschema==2.21.2
     # via nbformat
 fqdn==1.5.1
     # via jsonschema
+gunicorn==22.0.0
+    # via -r requirements.in
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
