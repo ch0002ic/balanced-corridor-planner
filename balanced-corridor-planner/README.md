@@ -1,6 +1,6 @@
-# Balanced Corridor Planner Web
+# Balanced Corridor Planner (Web App)
 
-Single-page React application for visualising corridor balancing simulations.
+Intuitive React application for visualising corridor balancing simulations.
 
 ## Getting Started
 

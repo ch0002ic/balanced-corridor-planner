@@ -4,7 +4,5 @@
   "buildCommand": "npm run build --prefix balanced-corridor-planner",
   "outputDirectory": "balanced-corridor-planner/dist",
   "framework": "vite",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
