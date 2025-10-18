@@ -26,6 +26,11 @@ node_modules/
 # Ignore Vercel local settings
 .vercel/
 
+# Ignore local overrides of env files
+*.env.local
+.env.development.local
+.env.production.local
+
 # Ignore all images in subfolders of images folder
 images/archive
 images/remove_background
