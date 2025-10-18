@@ -23,6 +23,9 @@ node_modules/
 # Ignore macOS metadata
 .DS_Store
 
+# Ignore Vercel local settings
+.vercel/
+
 # Ignore all images in subfolders of images folder
 images/archive
 images/remove_background
