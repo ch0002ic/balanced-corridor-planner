@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Server Test</title>
+</head>
+<body>
+  <h1>Testing Backend Server</h1>
+  <button onclick="testServer()">Test Connection</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function testServer() {
+      const result = document.getElementById('result');
+      result.textContent = 'Testing...\n';
+
+      // Test 1: Direct fetch
+      try {
+        result.textContent += '\n1. Testing http://localhost:3001/api/health\n';
+        const response = await fetch('http://localhost:3001/api/health');
+        const data = await response.json();
+        result.textContent += 'SUCCESS: ' + JSON.stringify(data, null, 2) + '\n';
+      } catch (error) {
+        result.textContent += 'FAILED: ' + error.message + '\n';
+      }
+
+      // Test 2: Proxy fetch
+      try {
+        result.textContent += '\n2. Testing /api/health (via proxy)\n';
+        const response = await fetch('/api/health');
+        const data = await response.json();
+        result.textContent += 'SUCCESS: ' + JSON.stringify(data, null, 2) + '\n';
+      } catch (error) {
+        result.textContent += 'FAILED: ' + error.message + '\n';
+      }
+    }
+  </script>
+</body>
+</html>

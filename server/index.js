@@ -12,21 +12,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3001;
 
-app.use(cors());
+// CRITICAL: Enable CORS FIRST before any other middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dataDir = path.join(__dirname, '..', 'data');
-    // Create data directory if it doesn't exist
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
     cb(null, dataDir);
   },
   filename: (req, file, cb) => {
-    // Always save as input.csv
     cb(null, 'input.csv');
   }
 });
@@ -41,7 +45,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
+    fileSize: 10 * 1024 * 1024
   }
 });
 
@@ -54,18 +58,25 @@ let simulationData = {
   logs: []
 };
 
-// Health check
+// CRITICAL: Health check endpoint - MUST be first
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  console.log('Health check requested');
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    port: PORT
+  });
 });
 
 // Upload CSV endpoint
 app.post('/api/upload', upload.single('file'), (req, res) => {
   try {
+    console.log('Upload request received');
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
+    console.log('File uploaded:', req.file.filename);
     res.json({
       message: 'File uploaded successfully',
       filename: req.file.filename,
@@ -79,6 +90,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
 // Start simulation endpoint
 app.post('/api/simulation/start', (req, res) => {
+  console.log('Start simulation requested');
+  
   if (simulationProcess) {
     return res.status(400).json({ error: 'Simulation already running' });
   }
@@ -124,6 +137,8 @@ app.post('/api/simulation/start', (req, res) => {
 
 // Stop simulation endpoint
 app.post('/api/simulation/stop', (req, res) => {
+  console.log('Stop simulation requested');
+  
   if (!simulationProcess) {
     return res.status(400).json({ error: 'No simulation running' });
   }
@@ -142,6 +157,7 @@ app.post('/api/simulation/stop', (req, res) => {
 
 // Get simulation status
 app.get('/api/simulation/status', (req, res) => {
+  console.log('Status requested');
   res.json({
     isRunning: simulationData.isRunning,
     currentTime: simulationData.currentTime,
@@ -152,12 +168,23 @@ app.get('/api/simulation/status', (req, res) => {
 
 // Get simulation logs
 app.get('/api/simulation/logs', (req, res) => {
+  console.log('Logs requested');
   res.json({
     logs: simulationData.logs.slice(-100)
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`✓ Backend API server running on http://localhost:${PORT}`);
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: err.message || 'Internal server error' });
+});
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('='.repeat(60));
+  console.log('✓ Backend API server running');
+  console.log(`✓ Listening on: http://localhost:${PORT}`);
   console.log(`✓ Health check: http://localhost:${PORT}/api/health`);
+  console.log('='.repeat(60));
 });

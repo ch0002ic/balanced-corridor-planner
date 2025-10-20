@@ -1,6 +1,7 @@
 interface HealthResponse {
   status: string;
   timestamp: string;
+  port?: number;
 }
 
 interface SimulationResponse {
@@ -29,20 +30,27 @@ class APIClient {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = '/api';
+    // Use relative URL so it works with the same origin
+    this.baseURL = '';
   }
 
   async healthCheck(): Promise<HealthResponse> {
-    const response = await fetch(`${this.baseURL}/health`);
-    if (!response.ok) {
-      throw new Error('Health check failed');
+    try {
+      const response = await fetch(`${this.baseURL}/api/health`);
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.status}`);
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Health check failed:', error);
+      throw error;
     }
-    return response.json();
   }
 
   async startSimulation(): Promise<SimulationResponse> {
-    const response = await fetch(`${this.baseURL}/simulation/start`, {
+    const response = await fetch(`${this.baseURL}/api/simulation/start`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
     });
     if (!response.ok) {
       const error = await response.json();
@@ -52,8 +60,9 @@ class APIClient {
   }
 
   async stopSimulation(): Promise<SimulationResponse> {
-    const response = await fetch(`${this.baseURL}/simulation/stop`, {
+    const response = await fetch(`${this.baseURL}/api/simulation/stop`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
     });
     if (!response.ok) {
       const error = await response.json();
@@ -63,7 +72,7 @@ class APIClient {
   }
 
   async getStatus(): Promise<StatusResponse> {
-    const response = await fetch(`${this.baseURL}/simulation/status`);
+    const response = await fetch(`${this.baseURL}/api/simulation/status`);
     if (!response.ok) {
       throw new Error('Failed to get status');
     }
@@ -71,7 +80,7 @@ class APIClient {
   }
 
   async getLogs(): Promise<LogsResponse> {
-    const response = await fetch(`${this.baseURL}/simulation/logs`);
+    const response = await fetch(`${this.baseURL}/api/simulation/logs`);
     if (!response.ok) {
       throw new Error('Failed to get logs');
     }
@@ -82,20 +91,16 @@ class APIClient {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${this.baseURL}/upload`, {
+    console.log('Uploading to:', `${this.baseURL}/api/upload`);
+    
+    const response = await fetch(`${this.baseURL}/api/upload`, {
       method: 'POST',
-      body: formData,
+      body: formData
     });
 
     if (!response.ok) {
-      let errorMessage = 'Failed to upload file';
-      try {
-        const error = await response.json();
-        errorMessage = error.error || errorMessage;
-      } catch {
-        errorMessage = 'Backend server not responding. Please start the server with: npm run server';
-      }
-      throw new Error(errorMessage);
+      const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+      throw new Error(error.error || 'Failed to upload file');
     }
     return response.json();
   }
