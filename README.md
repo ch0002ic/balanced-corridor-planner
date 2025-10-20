@@ -1,126 +1,77 @@
-# Balanced Corridor Planner
+# Codechella TCW Academy - Container Terminal Simulation
 
-An end-to-end horizontal transport (HT) planner that combines a Python
-simulation core with a Vite/TypeScript interface and lightweight Node.js API
-helpers. The planner enforces a 700 DI-job yard cap, exposes feature toggles for
-optimisation experiments, and ships with archived artefacts for reproducible
-benchmarks.
-
-## Project Layout
-
-- `src/` – Python simulation engine (planning and operations modules)
-- `data/`, `logs/` – Input data and run artefacts for CLI/GUI execution
-- `server/`, `public/` – Node/Vite scaffolding for the web experience
-- `cli.py`, `gui.py` – Entry points for headless and GUI-driven simulation runs
-- `archives/` – Stored results, sweep summaries, and best-run outputs
+A web-based simulation system for container terminal operations with Python backend and TypeScript frontend.
 
 ## Prerequisites
 
-- Python 3.11+
-- Node.js 18+
+- Node.js (v18 or higher)
+- Python 3.x
+- npm
 
-## Environment Setup
-
-### Python
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### Node.js
+## Installation
 
 ```bash
 npm install
 ```
 
-## Running The Planner
+## Running the Application
 
-### Web Workflow
+**IMPORTANT:** You need to run TWO separate processes:
 
-1. In one terminal, start the backend helpers:
-   ```bash
-   npm run server
-   ```
-   Backend runs on `http://localhost:3001`.
-2. In a second terminal, launch the Vite frontend:
-   ```bash
-   npm run dev
-   ```
-   Open the printed `http://localhost:5173` URL to control simulations from the
-   browser.
-
-### Python CLI
-
-- Default run:
-  ```bash
-  python cli.py
-  ```
-- Best performing configuration (1,139,820 s, DI max 687):
-  ```bash
-  JOB_PLANNER_FEATURES=ga_diversity,ht_future_penalty python cli.py
-  ```
-
-### Python GUI
+### 1. Start the Backend Server (Terminal 1)
 
 ```bash
-python gui.py
+npm run server
 ```
 
-## Feature Toggles
+This starts the Express backend on `http://localhost:3001`
 
-`JOB_PLANNER_FEATURES` accepts a comma-separated list of tokens:
-
-```
-dynamic_corridor_bias, ga_diversity, ht_future_penalty, path_cache
-```
-
-Flags not supplied remain disabled. Prefix a token with `!` to force-disable it
-within a preset.
-
-## Reproducing Experiments
-
-1. Run the sweep helper (Python 3.11+):
-   ```bash
-   python - <<'PY'
-   # replicate the sweep from archives/2025-10-18_ga_diversity_ht_future_penalty
-   # or adapt the script for new experiments
-   PY
-   ```
-2. Review artefacts in `archives/2025-10-18_ga_diversity_ht_future_penalty/` for
-   outputs, logs, and feature mix summaries.
-
-## Validating The DI Cap
+### 2. Start the Frontend (Terminal 2)
 
 ```bash
-python - <<'PY'
-import csv
-from collections import Counter
-
-counts = Counter()
-with open('data/output.csv') as fh:
-    reader = csv.DictReader(fh)
-    for row in reader:
-        if row['job_type'] == 'DI':
-            yard = row['assigned_yard_name'] or row['yard_name']
-            counts[yard] += 1
-
-print('Worst-case DI load:', max(counts.values(), default=0))
-PY
+npm run dev
 ```
 
-## Integration Notes
+This starts the Vite dev server on `http://localhost:5173`
 
-- All planner changes reside in `src/plan/job_planner.py`; drop-in compatible
-  with the official simulator bundle.
-- The engine caches yard utilisation in-memory, so no schema or data migrations
-  are required.
-- Ensure `data/input.csv` matches your target release when re-running external
-  evaluation scripts.
+## Usage
 
-## Support
+1. **Check System Status** - Verify backend connection (green dot = connected)
+2. **Upload CSV File** - Click "Upload CSV File" button and select your `input.csv`
+3. **Start Simulation** - Once CSV is uploaded, click "Start Simulation"
+4. **Monitor Logs** - View real-time simulation logs in the logs panel
+5. **Stop Simulation** - Click "Stop Simulation" when needed
 
-Ping the engineering team through your usual collaboration channel for
-integration help or demo walkthroughs.
+## Project Structure
+
+```
+├── server/           # Express backend server
+│   └── index.js      # API endpoints and file upload handling
+├── src/              # Frontend source
+│   ├── api/          # API client
+│   ├── main.ts       # Main application logic
+│   └── style.css     # Styles
+├── data/             # CSV upload directory (auto-created)
+└── cli.py            # Python simulation script
+```
+
+## API Endpoints
+
+- `GET /api/health` - Health check
+- `POST /api/upload` - Upload CSV file
+- `POST /api/simulation/start` - Start simulation
+- `POST /api/simulation/stop` - Stop simulation
+- `GET /api/simulation/status` - Get simulation status
+- `GET /api/simulation/logs` - Get simulation logs
+
+## Troubleshooting
+
+**Upload fails with "Unexpected token '<'":**
+- Make sure the backend server is running (`npm run server`)
+- Check that port 3001 is not in use
+- Verify the "System Status" shows "Backend Connected ✓"
+
+**Simulation won't start:**
+- Ensure you've uploaded a CSV file first
+- Check that `cli.py` exists in the project root
+- Verify Python 3 is installed and accessible

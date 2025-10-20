@@ -50,6 +50,7 @@ h1 {
 }
 
 .status-panel,
+.upload-panel,
 .control-panel,
 .logs-panel {
   background: #1a1a1a;
@@ -88,6 +89,56 @@ h2 {
 
 #status-text {
   font-weight: 500;
+}
+
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn-upload {
+  background: #3b82f6;
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 1rem 2rem;
+}
+
+.btn-upload:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.upload-info {
+  min-height: 60px;
+}
+
+.upload-progress,
+.upload-success,
+.upload-error {
+  padding: 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.upload-progress {
+  background: #1e40af;
+  color: #93c5fd;
+}
+
+.upload-success {
+  background: #065f46;
+  color: #6ee7b7;
+}
+
+.upload-error {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.file-info {
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  opacity: 0.8;
 }
 
 .button-group {

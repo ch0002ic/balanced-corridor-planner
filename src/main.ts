@@ -16,6 +16,17 @@ app.innerHTML = `
       </div>
     </div>
 
+    <div class="upload-panel">
+      <h2>Upload Input Data</h2>
+      <div class="upload-section">
+        <input type="file" id="csv-input" accept=".csv" style="display: none;" />
+        <button id="upload-btn" class="btn btn-upload">
+          📁 Upload CSV File
+        </button>
+        <div id="upload-status" class="upload-info"></div>
+      </div>
+    </div>
+
     <div class="control-panel">
       <h2>Simulation Controls</h2>
       <div class="button-group">
@@ -34,6 +45,9 @@ app.innerHTML = `
 
 const statusText = document.getElementById('status-text')!
 const statusDot = document.querySelector('.status-dot')!
+const uploadBtn = document.getElementById('upload-btn') as HTMLButtonElement
+const csvInput = document.getElementById('csv-input') as HTMLInputElement
+const uploadStatus = document.getElementById('upload-status')!
 const startBtn = document.getElementById('start-btn') as HTMLButtonElement
 const stopBtn = document.getElementById('stop-btn') as HTMLButtonElement
 const simStatus = document.getElementById('sim-status')!
@@ -41,6 +55,7 @@ const logsContainer = document.getElementById('logs')!
 
 let statusInterval: number | null = null
 let logsInterval: number | null = null
+let csvUploaded = false
 
 async function checkHealth() {
   try {
@@ -91,6 +106,74 @@ async function updateLogs() {
     console.error('Failed to update logs:', error)
   }
 }
+
+// Upload button click handler
+uploadBtn.addEventListener('click', () => {
+  csvInput.click()
+})
+
+// File selection handler
+csvInput.addEventListener('change', async (event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  
+  if (!file) {
+    return
+  }
+
+  // Validate file type
+  if (!file.name.endsWith('.csv')) {
+    uploadStatus.innerHTML = `
+      <div class="upload-error">
+        ❌ Please select a CSV file
+      </div>
+    `
+    return
+  }
+
+  try {
+    uploadBtn.disabled = true
+    uploadBtn.textContent = '⏳ Uploading...'
+    
+    uploadStatus.innerHTML = `
+      <div class="upload-progress">
+        📤 Uploading ${file.name}...
+      </div>
+    `
+
+    // Upload file to backend
+    const result = await apiClient.uploadCSV(file)
+    
+    csvUploaded = true
+    uploadStatus.innerHTML = `
+      <div class="upload-success">
+        ✅ ${result.message}
+        <div class="file-info">File: ${result.filename} (${(result.size / 1024).toFixed(2)} KB)</div>
+      </div>
+    `
+    
+    uploadBtn.textContent = '✓ CSV Uploaded'
+    
+    // Reset file input
+    csvInput.value = ''
+    
+    // Re-enable upload button after 2 seconds
+    setTimeout(() => {
+      uploadBtn.disabled = false
+      uploadBtn.textContent = '📁 Upload CSV File'
+    }, 2000)
+    
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    uploadStatus.innerHTML = `
+      <div class="upload-error">
+        ❌ ${errorMessage}
+      </div>
+    `
+    uploadBtn.disabled = false
+    uploadBtn.textContent = '📁 Upload CSV File'
+  }
+})
 
 startBtn.addEventListener('click', async () => {
   try {

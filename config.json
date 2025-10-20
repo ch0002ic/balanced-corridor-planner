@@ -1,8 +1,16 @@
 {
   "template": "cb-vite-ts-template",
   "isPublic": true,
+  "projectName": "Codechella TCW Academy",
+  "projectId": "codechella-tcw-academy",
   "buildConfig": {
     "framework": "vite",
-    "outputDir": "dist"
+    "outputDir": "dist",
+    "buildCommand": "npm run build",
+    "installCommand": "npm install"
+  },
+  "deployment": {
+    "type": "static",
+    "platform": "web"
   }
 }
