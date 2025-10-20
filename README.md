@@ -1,132 +1,113 @@
-# PSA Code Sprint – TCW Academy Smart Port Simulator
+# Codechella TCW Academy - Container Terminal Simulation
 
-## Overview
-
-This repository contains the full-featured smart port operations simulator used during the PSA Code Sprint. The core of the project is a Python planning and operations engine that coordinates quay cranes, yard cranes, horizontal transport (HT) fleets, and yard capacity limits over a 20 000-job discharge and load scenario. Optional Vite/TypeScript UI assets are included for visualisation, but the canonical execution path is the Python command-line interface.
-
-Key capabilities:
-
-- Genetic-algorithm-based yard planner with feature toggles (`JOB_PLANNER_FEATURES`) for bias, diversity pressure, and lookahead penalties.
-- Hard enforcement of the 700 DI-container per yard capacity rule with soft penalties to keep the search space well behaved.
-- Deterministic time stepping and export of full job lifecycle metrics to `data/output.csv` and structured logs in `logs/`.
-- Optional Node/Express adapter to serve the CLI over HTTP for browser integrations.
-
-## Repository Layout
-
-```
-├── cli.py                    # Legacy CLI entry point (kept for Node server compatibility)
-├── simulation_runner.py      # Recommended full-engine CLI (imports src.simulation.Simulation)
-├── data/
-│   ├── input.csv             # Scenario definition (20k jobs)
-│   └── output.csv            # Latest simulation results (generated)
-├── logs/                     # Timestamped planner/operator logs
-├── src/
-│   ├── plan/job_planner.py   # GA yard planner with capacity enforcement
-│   ├── plan/job_tracker.py   # Job status orchestration
-│   ├── operate/engine.py     # HT/QC/Yard operator scheduler
-│   ├── simulation.py         # High-level Simulation orchestration
-│   └── ui/, api/, *.ts       # Optional front-end hooks
-├── server/index.js           # Express wrapper that shells out to the CLI
-├── package.json              # Vite dev server scripts (front-end optional)
-└── requirements.txt          # Python dependencies (see notes below)
-```
+A web-based simulation system for container terminal operations with Python backend and TypeScript frontend.
 
 ## Prerequisites
 
-- Python 3.11 (or newer 3.10+ build) with `pip`
-- Recommended: a virtual environment (`python -m venv .venv`)
-- Node.js 18 LTS (optional, only required for the web UI or Express adapter)
+- Node.js (v18 or higher)
+- Python 3.x (standard library only)
+- npm
 
-### Python packages
+## Installation
 
-Install the runtime dependencies into your environment. The `requirements.txt` keeps the HTTP adapter minimal, so install the simulation packages explicitly:
-
-```bash
-pip install -r requirements.txt pandas logzero
-```
-
-Optional developer tooling (formatters, notebooks) is commented out in `requirements.txt`; add the ones you need.
-
-### Node packages (optional UI/backend)
-
-If you plan to run the Vite UI or the Express upload proxy, install the JavaScript dependencies:
+### 1. Install Node.js Dependencies
 
 ```bash
 npm install
 ```
 
-## Running the Simulation (CLI)
-
-1. Place your job manifest at `data/input.csv`. The default file contains the full challenge scenario.
-2. Activate your Python environment and ensure dependencies are installed.
-3. Run the full engine using `simulation_runner.py`:
+### 2. Install Python Dependencies (Optional)
 
 ```bash
-python simulation_runner.py
+pip3 install -r requirements.txt
 ```
 
-The runner streams progress to stdout, writes a detailed planner log to `logs/`, and saves the job completion report to `data/output.csv` once all jobs finish or a deadlock is detected.
+**Note:** Most Python packages in requirements.txt are not available in WebContainer. The simulation uses Python's standard library (csv module) instead.
 
-### Planner feature toggles
+## Running the Application
 
-The genetic planner exposes several guarded heuristics. Enable them by setting `JOB_PLANNER_FEATURES` before invoking the CLI. Separate feature flags with commas:
+**IMPORTANT:** You need to run TWO separate processes:
+
+### 1. Start the Backend Server (Terminal 1)
 
 ```bash
-export JOB_PLANNER_FEATURES=ga_diversity,ht_future_penalty
-python simulation_runner.py
+npm run server
 ```
 
-Available flags:
+This starts the Express backend on `http://localhost:3001`
 
-- `ga_diversity` – maintains GA population diversity via adaptive mutation.
-- `ht_future_penalty` – penalises assignments likely to starve specific corridors later in the plan.
-- `dynamic_corridor_bias` – gradually biases yard selection by east/west utilisation history.
-- `path_cache` – enables cached pathfinding for repeated yard/QC hops.
+**Expected output:**
+```
+✓ Backend API server running on http://localhost:3001
+✓ Health check: http://localhost:3001/api/health
+```
 
-The current best-performing configuration during code sprint validation was `ga_diversity,ht_future_penalty`, which achieved 1 139 820 s while satisfying the DI yard cap.
+### 2. Start the Frontend (Terminal 2)
 
-### Outputs
+```bash
+npm run dev
+```
 
-- `data/output.csv` – per-job record including assigned yard, HT, start/end timestamps, and QC sequencing.
-- `logs/*.log` – timestamped planner/operator logs (rolling). Each CLI run appends a new log file.
-- stdout – progress JSON snapshots that can be piped into dashboards.
+This starts the Vite dev server on `http://localhost:5173`
 
-## Optional Web UI / HTTP Adapter
+## Usage
 
-To interact with the simulator from a browser:
+1. **Check System Status** - Verify backend connection (green dot = connected)
+2. **Upload CSV File** - Click "Upload CSV File" button and select your `input.csv`
+3. **Start Simulation** - Once CSV is uploaded, click "Start Simulation"
+4. **Monitor Logs** - View real-time simulation logs in the logs panel
+5. **Stop Simulation** - Click "Stop Simulation" when needed
 
-1. Start the Express server (provides REST endpoints and shells out to `cli.py`).
+## Project Structure
 
-   ```bash
-   npm run server
-   ```
+```
+├── server/           # Express backend server
+│   └── index.js      # API endpoints and file upload handling
+├── src/              # Frontend source
+│   ├── api/          # API client
+│   ├── main.ts       # Main application logic
+│   └── style.css     # Styles
+├── data/             # CSV upload directory (auto-created)
+├── cli.py            # Python simulation script (simplified)
+└── requirements.txt  # Python dependencies (mostly unavailable in WebContainer)
+```
 
-   The server listens on `http://localhost:3001` and exposes `/api/upload`, `/api/simulation/start`, `/api/simulation/status`, and `/api/simulation/logs`.
+## API Endpoints
 
-2. In a second terminal, launch the Vite front-end:
+- `GET /api/health` - Health check
+- `POST /api/upload` - Upload CSV file
+- `POST /api/simulation/start` - Start simulation
+- `POST /api/simulation/stop` - Stop simulation
+- `GET /api/simulation/status` - Get simulation status
+- `GET /api/simulation/logs` - Get simulation logs
 
-   ```bash
-   npm run dev
-   ```
+## WebContainer Limitations
 
-   Access `http://localhost:5173` to upload CSVs, start/stop the simulation, and observe live logs.
+This project runs in WebContainer, which has some limitations:
 
-> **Note:** The Express adapter currently executes `cli.py`. If you want the UI to leverage the full engine with GA planning and pandas-backed metrics, update `server/index.js` to call `simulation_runner.py` instead.
+- **Python**: Only standard library available (no pip packages like pandas, numpy, etc.)
+- **Simulation**: Uses built-in `csv` module instead of pandas
+- **Dependencies**: Most packages in requirements.txt are not available
+
+The simulation has been simplified to work within these constraints.
 
 ## Troubleshooting
 
-- **`ModuleNotFoundError: No module named 'pandas'`** – install the optional simulation dependencies with `pip install pandas logzero`.
-- **Simulation exits with "input.csv not found"** – ensure a valid CSV exists at `data/input.csv` before starting the CLI.
-- **Deadlock detected** – the planner stopped because no HT completed work for the configured threshold; inspect the most recent file in `logs/` to review HT/QC activity.
-- **Express server cannot spawn Python** – confirm `python3` is on your PATH or edit `server/index.js` to point at your virtual environment’s interpreter.
-- **Front-end status polling times out** – check that the Express server was started first and that CORS is not blocked by firewalls or browser extensions.
+**npm run server fails:**
+- Run `npm install` first
+- Check that port 3001 is not in use
+- Verify Node.js is installed (v18+)
 
-## Contributing
+**Upload fails with "Unexpected token '<'":**
+- Make sure the backend server is running (`npm run server`)
+- Verify the "System Status" shows "Backend Connected ✓"
 
-- Planner heuristics live in `src/plan/job_planner.py`. Each helper is documented; add brief inline comments when introducing complex logic.
-- Keep new assets ASCII-only unless the file already uses non-ASCII symbols.
-- When adding new CLI options, document them in this README and ensure defaults maintain deterministic runs for benchmarking.
+**Simulation won't start:**
+- Ensure you've uploaded a CSV file first
+- Check that `cli.py` exists in the project root
+- Verify Python 3 is installed
 
-## License
-
-Internal project for TCW Academy hackathon use. Contact the maintainers before distributing externally.
+**Python packages fail to install:**
+- This is expected in WebContainer
+- The simulation uses Python's standard library only
+- No external packages are required

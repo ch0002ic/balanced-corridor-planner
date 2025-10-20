@@ -1,5 +1,5 @@
 {
-  "name": "port-terminal-simulation",
+  "name": "tcw_academy_ywdecp",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,8 +8,12 @@
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/ws": "^8.5.13",
     "typescript": "^5.7.3",
     "vite": "^6.0.11"
   }
