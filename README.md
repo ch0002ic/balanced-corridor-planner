@@ -114,11 +114,11 @@ PY
 ## Integration Notes
 
 - All planner changes reside in `src/plan/job_planner.py`; drop-in compatible
-   with the official simulator bundle.
+  with the official simulator bundle.
 - The engine caches yard utilisation in-memory, so no schema or data migrations
-   are required.
+  are required.
 - Ensure `data/input.csv` matches your target release when re-running external
-   evaluation scripts.
+  evaluation scripts.
 
 ## Support
 
