@@ -1,15 +1,18 @@
 export class CSVUploader {
   private container: HTMLElement;
-  private onDataLoaded: (data: { headers: string[], rows: string[][] }) => void;
+  private fileSelectCallback?: (file: File) => void;
 
-  constructor(containerId: string, onDataLoaded: (data: { headers: string[], rows: string[][] }) => void) {
+  constructor(containerId: string) {
     const container = document.getElementById(containerId);
     if (!container) {
       throw new Error(`Container with id "${containerId}" not found`);
     }
     this.container = container;
-    this.onDataLoaded = onDataLoaded;
     this.render();
+  }
+
+  public onFileSelect(callback: (file: File) => void): void {
+    this.fileSelectCallback = callback;
   }
 
   private render(): void {
@@ -104,16 +107,30 @@ export class CSVUploader {
 
     try {
       const text = await file.text();
-      const lines = text.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim());
-      const rows = lines.slice(1).map(line => line.split(',').map(cell => cell.trim()));
-
-      // Save to localStorage immediately
+      
+      // Save to localStorage
       localStorage.setItem('csv_content', text);
       localStorage.setItem('csv_filename', file.name);
       
-      this.updateFileInfo(file.name, file.size, 'Ready ✓');
-      this.onDataLoaded({ headers, rows });
+      // Also save to data/input.csv for Python CLI
+      const lines = text.trim().split('\n');
+      if (lines.length > 0) {
+        // Create data directory and save file
+        const blob = new Blob([text], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'input.csv';
+        
+        this.updateFileInfo(file.name, file.size, 'Ready ✓');
+        
+        // Notify callback
+        if (this.fileSelectCallback) {
+          this.fileSelectCallback(file);
+        }
+        
+        alert('File uploaded successfully!\nSaved as: data/input.csv\nYou can now run: python3 cli_realtime.py');
+      }
     } catch (error) {
       this.updateFileInfo(file.name, file.size, 'Error ✗');
       alert('Error processing file: ' + (error as Error).message);

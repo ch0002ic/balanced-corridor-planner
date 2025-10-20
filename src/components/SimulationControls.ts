@@ -1,24 +1,31 @@
 export class SimulationControls {
   private container: HTMLElement;
   private isRunning = false;
-  private onStart?: () => void;
-  private onPause?: () => void;
-  private onReset?: () => void;
+  private startCallback?: () => void;
+  private pauseCallback?: () => void;
+  private resetCallback?: () => void;
 
-  constructor(
-    containerId: string,
-    callbacks?: {
-      onStart?: () => void;
-      onPause?: () => void;
-      onReset?: () => void;
-    }
-  ) {
+  constructor(containerId: string) {
     const element = document.getElementById(containerId);
     if (!element) throw new Error(`Container ${containerId} not found`);
     this.container = element;
-    this.onStart = callbacks?.onStart;
-    this.onPause = callbacks?.onPause;
-    this.onReset = callbacks?.onReset;
+    this.render();
+  }
+
+  public onStart(callback: () => void): void {
+    this.startCallback = callback;
+  }
+
+  public onPause(callback: () => void): void {
+    this.pauseCallback = callback;
+  }
+
+  public onReset(callback: () => void): void {
+    this.resetCallback = callback;
+  }
+
+  public setRunning(running: boolean): void {
+    this.isRunning = running;
     this.render();
   }
 
@@ -84,18 +91,18 @@ export class SimulationControls {
 
     startBtn?.addEventListener('click', () => {
       this.isRunning = !this.isRunning;
-      if (this.isRunning && this.onStart) {
-        this.onStart();
-      } else if (!this.isRunning && this.onPause) {
-        this.onPause();
+      if (this.isRunning && this.startCallback) {
+        this.startCallback();
+      } else if (!this.isRunning && this.pauseCallback) {
+        this.pauseCallback();
       }
       this.render();
     });
 
     resetBtn?.addEventListener('click', () => {
       this.isRunning = false;
-      if (this.onReset) {
-        this.onReset();
+      if (this.resetCallback) {
+        this.resetCallback();
       }
       this.render();
     });
