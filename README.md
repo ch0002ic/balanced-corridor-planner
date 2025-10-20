@@ -1,52 +1,126 @@
-# Codechella TCW Academy - Container Terminal Simulation
+# Balanced Corridor Planner
 
-A container terminal simulation and management system with Python backend and TypeScript frontend.
+An end-to-end horizontal transport (HT) planner that combines a Python
+simulation core with a Vite/TypeScript interface and lightweight Node.js API
+helpers. The planner enforces a 700 DI-job yard cap, exposes feature toggles for
+optimisation experiments, and ships with archived artefacts for reproducible
+benchmarks.
 
-## Quick Start
+## Project Layout
 
-### 1. Start the Backend API Server
+- `src/` – Python simulation engine (planning and operations modules)
+- `data/`, `logs/` – Input data and run artefacts for CLI/GUI execution
+- `server/`, `public/` – Node/Vite scaffolding for the web experience
+- `cli.py`, `gui.py` – Entry points for headless and GUI-driven simulation runs
+- `archives/` – Stored results, sweep summaries, and best-run outputs
+
+## Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+
+## Environment Setup
+
+### Python
+
 ```bash
-npm run server
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
-The server will run on `http://localhost:3001`
 
-### 2. Start the Frontend (in a new terminal)
+### Node.js
+
 ```bash
-npm run dev
+npm install
 ```
-The frontend will run on `http://localhost:5173`
 
-## Features
+## Running The Planner
 
-- **Real-time Simulation**: Container terminal operations simulation
-- **Live Monitoring**: Track simulation status and logs in real-time
-- **API Integration**: RESTful API for simulation control
-- **Dual Interface**: Web UI and CLI support
+### Web Workflow
 
-## Architecture
+1. In one terminal, start the backend helpers:
+   ```bash
+   npm run server
+   ```
+   Backend runs on `http://localhost:3001`.
+2. In a second terminal, launch the Vite frontend:
+   ```bash
+   npm run dev
+   ```
+   Open the printed `http://localhost:5173` URL to control simulations from the
+   browser.
 
-- **Frontend**: Vite + TypeScript
-- **Backend API**: Node.js + Express
-- **Simulation Engine**: Python
-- **Communication**: REST API with CORS support
+### Python CLI
 
-## API Endpoints
+- Default run:
+  ```bash
+  python cli.py
+  ```
+- Best performing configuration (1,139,820 s, DI max 687):
+  ```bash
+  JOB_PLANNER_FEATURES=ga_diversity,ht_future_penalty python cli.py
+  ```
 
-- `GET /api/health` - Health check
-- `POST /api/simulation/start` - Start simulation
-- `POST /api/simulation/stop` - Stop simulation
-- `GET /api/simulation/status` - Get current status
-- `GET /api/simulation/logs` - Get simulation logs
+### Python GUI
 
-## Development
+```bash
+python gui.py
+```
 
-The project requires both Node.js and Python environments:
-- Node.js for the API server and frontend
-- Python 3 for the simulation engine
+## Feature Toggles
 
-## Troubleshooting
+`JOB_PLANNER_FEATURES` accepts a comma-separated list of tokens:
 
-If you see "Backend Disconnected":
-1. Make sure the backend server is running: `npm run server`
-2. Check that port 3001 is available
-3. Verify Python 3 is installed: `python3 --version`
+```
+dynamic_corridor_bias, ga_diversity, ht_future_penalty, path_cache
+```
+
+Flags not supplied remain disabled. Prefix a token with `!` to force-disable it
+within a preset.
+
+## Reproducing Experiments
+
+1. Run the sweep helper (Python 3.11+):
+   ```bash
+   python - <<'PY'
+   # replicate the sweep from archives/2025-10-18_ga_diversity_ht_future_penalty
+   # or adapt the script for new experiments
+   PY
+   ```
+2. Review artefacts in `archives/2025-10-18_ga_diversity_ht_future_penalty/` for
+   outputs, logs, and feature mix summaries.
+
+## Validating The DI Cap
+
+```bash
+python - <<'PY'
+import csv
+from collections import Counter
+
+counts = Counter()
+with open('data/output.csv') as fh:
+    reader = csv.DictReader(fh)
+    for row in reader:
+        if row['job_type'] == 'DI':
+            yard = row['assigned_yard_name'] or row['yard_name']
+            counts[yard] += 1
+
+print('Worst-case DI load:', max(counts.values(), default=0))
+PY
+```
+
+## Integration Notes
+
+- All planner changes reside in `src/plan/job_planner.py`; drop-in compatible
+   with the official simulator bundle.
+- The engine caches yard utilisation in-memory, so no schema or data migrations
+   are required.
+- Ensure `data/input.csv` matches your target release when re-running external
+   evaluation scripts.
+
+## Support
+
+Ping the engineering team through your usual collaboration channel for
+integration help or demo walkthroughs.
