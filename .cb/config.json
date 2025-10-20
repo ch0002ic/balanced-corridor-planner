@@ -1,8 +1,0 @@
-{
-  "template": "cb-vite-ts-template",
-  "isPublic": true,
-  "buildConfig": {
-    "framework": "vite",
-    "outputDir": "dist"
-  }
-}
