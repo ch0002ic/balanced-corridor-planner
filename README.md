@@ -1,39 +1,52 @@
-# Balanced Corridor Planner (Web App)
+# Codechella TCW Academy - Container Terminal Simulation
 
-A DI-cap-aware genetic algorithm planner that balances yard corridors while pre-selecting future-ready horizontal transports to shorten port completion time.
+A container terminal simulation and management system with Python backend and TypeScript frontend.
 
-## Problem Context
+## Quick Start
 
-Port terminals often breach discharge (DI) caps in specific corridors, creating idle cranes and extended vessel stays. Our planner exposes the live health of each corridor, lets operations teams experiment with algorithmic toggles, and archives every run so lessons learned can be replayed.
+### 1. Start the Backend API Server
+```bash
+npm run server
+```
+The server will run on `http://localhost:3001`
+
+### 2. Start the Frontend (in a new terminal)
+```bash
+npm run dev
+```
+The frontend will run on `http://localhost:5173`
+
+## Features
+
+- **Real-time Simulation**: Container terminal operations simulation
+- **Live Monitoring**: Track simulation status and logs in real-time
+- **API Integration**: RESTful API for simulation control
+- **Dual Interface**: Web UI and CLI support
 
 ## Architecture
 
-- **Frontend**: Vite + React + Tailwind, deployed on Vercel.
-- **Backend**: Python WSGI service (`src/api/app.py`) running on Render. It wraps the existing simulation CLI, manages feature flags, and persists outputs to the `archives/` tree.
-- **Data flow**: The API reads the latest `data/output.csv` or, if missing, falls back to the freshest archive. Responses are typed in `src/api/client.ts` to keep the UI and service in sync.
+- **Frontend**: Vite + TypeScript
+- **Backend API**: Node.js + Express
+- **Simulation Engine**: Python
+- **Communication**: REST API with CORS support
 
-## Running Locally
+## API Endpoints
 
-1. Start the backend from the repository root:
-   ```bash
-   python -m src.api.app
-   ```
-2. In `balanced-corridor-planner/`, install dependencies and launch the dev server:
-   ```bash
-   npm install
-   npm run dev
-   ```
-3. Create `balanced-corridor-planner/.env` and set `VITE_API_BASE_URL=http://localhost:8000` if you change ports.
+- `GET /api/health` - Health check
+- `POST /api/simulation/start` - Start simulation
+- `POST /api/simulation/stop` - Stop simulation
+- `GET /api/simulation/status` - Get current status
+- `GET /api/simulation/logs` - Get simulation logs
 
-## Feature Overview
+## Development
 
-- **Overview** page surfaces latest finish time, max DI jobs per yard, and last run timestamp.
-- **Feature Toggles** page lets planners queue simulations with combinations such as `dynamic_corridor_bias`, `ga_diversity`, and `ht_future_penalty`.
-- **Archives** page lists every completed run with download links for CSV outputs and logs so analysts can audit DI compliance.
+The project requires both Node.js and Python environments:
+- Node.js for the API server and frontend
+- Python 3 for the simulation engine
 
-## Deployment
+## Troubleshooting
 
-1. Render: deploy with `render.yaml`; ensure `PYTHON_VERSION=3.11.9` and the default start command `gunicorn --bind 0.0.0.0:$PORT src.api.app:app`.
-2. Vercel: add environment variable `VITE_API_BASE_URL=https://balanced-corridor-planner-api.onrender.com` and redeploy.
-
-Adjust `src/api/client.ts` only if backend endpoints change.
+If you see "Backend Disconnected":
+1. Make sure the backend server is running: `npm run server`
+2. Check that port 3001 is available
+3. Verify Python 3 is installed: `python3 --version`

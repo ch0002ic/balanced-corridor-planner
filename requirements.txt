@@ -66,8 +66,6 @@ fastjsonschema==2.21.2
     # via nbformat
 fqdn==1.5.1
     # via jsonschema
-gunicorn==22.0.0
-    # via -r requirements.in
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -240,9 +238,9 @@ pytokens==0.1.10
     # via black
 pytz==2025.2
     # via pandas
-pywin32==311; platform_system == "Windows"
+pywin32==311
     # via jupyter-core
-pywinpty==3.0.2; platform_system == "Windows"
+pywinpty==3.0.2
     # via
     #   jupyter-server
     #   jupyter-server-terminals
