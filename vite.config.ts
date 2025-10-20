@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   server: {
     port: 5173,
+    strictPort: true,
     host: '0.0.0.0',
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
@@ -15,8 +16,18 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['pyodide']
   },
+  resolve: {
+    alias: {
+      'pyodide': 'pyodide/pyodide.js'
+    }
+  },
   build: {
     target: 'esnext',
-    minify: false
+    rollupOptions: {
+      external: ['pyodide'],
+      output: {
+        manualChunks: undefined
+      }
+    }
   }
 });
